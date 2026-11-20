@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:fl_clash/common/file.dart';
 import 'package:fl_clash/common/print.dart';
+import 'package:fl_clash/common/task_pool.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 import 'package:shared_preferences_platform_interface/types.dart';
@@ -17,7 +18,7 @@ class AtomicFilePreferencesStore extends SharedPreferencesStorePlatform {
 
   final Future<String> _path;
   Future<Map<String, Object>>? _values;
-  Future<bool> _lastWrite = Future.value(true);
+  final _writes = TaskPool(1);
 
   Future<Map<String, Object>> _read() {
     return _values ??= _load().catchError((Object error, StackTrace stack) {
@@ -39,12 +40,14 @@ class AtomicFilePreferencesStore extends SharedPreferencesStorePlatform {
     return data is Map ? Map<String, Object>.from(data) : {};
   }
 
-  Future<bool> _update(void Function(Map<String, Object> values) change) async {
-    final values = await _read();
-    change(values);
-    final content = json.encode(values);
-    return _lastWrite = _lastWrite.then((_) => _write(content));
-  }
+  Future<bool> _update(void Function(Map<String, Object> values) change) =>
+      _writes.run(() async {
+        final values = {...await _read()};
+        change(values);
+        if (!await _write(json.encode(values))) return false;
+        _values = Future.value(values);
+        return true;
+      });
 
   Future<bool> _write(String content) async {
     final file = File(await _path);

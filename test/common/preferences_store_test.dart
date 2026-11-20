@@ -119,13 +119,14 @@ void main() {
 
   test('a save that cannot be written leaves the previous file', () async {
     File(path).writeAsStringSync(json.encode({'flutter.config': 'old'}));
-    Directory('$path.$pid.tmp').createSync();
+    final obstacle = Directory('$path.$pid.tmp')..createSync();
+    final store = openStore();
 
-    expect(
-      await openStore().setValue('String', 'flutter.config', 'new'),
-      isFalse,
-    );
-    expect(readFile(), {'flutter.config': 'old'});
+    expect(await store.setValue('String', 'flutter.config', 'new'), isFalse);
+    expect(await store.getAll(), {'flutter.config': 'old'});
+    obstacle.deleteSync();
+    expect(await store.setValue('Bool', 'flutter.flag', true), isTrue);
+    expect(readFile(), {'flutter.config': 'old', 'flutter.flag': true});
   });
 
   test('a save that cannot replace the file removes its temp file', () async {
