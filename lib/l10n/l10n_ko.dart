@@ -326,7 +326,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String subscriptionHwidRequest(String host) {
-    return '$host의 구독이 기기 식별자(HWID)를 요청합니다. 공유하시겠습니까?';
+    return '이 구독 전용으로 생성한 무작위 식별자(HWID)를 $host에 보내도록 허용할까요?';
   }
 
   @override
@@ -334,7 +334,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String disableGlobalHwidMessage(int count) {
-    return '현재 구독에서도 HWID 공유를 끄시겠습니까? 구독 $count개에서 공유 중입니다. 끄면 업데이트되지 않을 수 있습니다. 공유를 유지하면 해당 서버가 기기 식별자를 계속 받습니다.';
+    return '현재 구독에서도 HWID 공유를 끄시겠습니까? 구독 $count개에서 공유 중입니다. 끄면 업데이트되지 않을 수 있습니다. 공유를 유지하면 해당 서버가 구독별 식별자를 계속 받습니다.';
   }
 
   @override

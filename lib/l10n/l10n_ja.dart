@@ -327,7 +327,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String subscriptionHwidRequest(String host) {
-    return '$host のサブスクリプションがデバイス識別子 (HWID) を要求しています。共有を許可しますか？';
+    return 'このサブスクリプション専用のランダムな識別子（HWID）を $host に送信することを許可しますか？';
   }
 
   @override
@@ -335,7 +335,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String disableGlobalHwidMessage(int count) {
-    return '現在のサブスクリプションでも HWID の共有を無効にしますか？ 共有中のサブスクリプションは $count 件です。無効にすると更新できなくなる場合があります。共有を続けると、サーバーはデバイス識別子を引き続き受信します。';
+    return '現在のサブスクリプションでも HWID の共有を無効にしますか？ 共有中のサブスクリプションは $count 件です。無効にすると更新できなくなる場合があります。共有を続けると、サーバーは各サブスクリプション専用の識別子を引き続き受信します。';
   }
 
   @override

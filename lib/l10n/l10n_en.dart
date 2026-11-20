@@ -334,7 +334,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String subscriptionHwidRequest(String host) {
-    return 'The subscription from $host requests your device identifier (HWID). Allow sharing it?';
+    return 'Allow sending $host a random identifier (HWID) unique to this subscription?';
   }
 
   @override
@@ -342,7 +342,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String disableGlobalHwidMessage(int count) {
-    return 'Turn off HWID sharing for current subscriptions? Sharing is enabled for $count. Turning it off may prevent updates. Keeping it enabled lets those servers continue to receive the device identifier.';
+    return 'Turn off HWID sharing for current subscriptions? Sharing is enabled for $count. Turning it off may prevent updates. Keeping it enabled lets those servers continue to receive each subscription’s identifier.';
   }
 
   @override

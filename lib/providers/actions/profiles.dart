@@ -39,8 +39,8 @@ class ProfilesAction extends _$ProfilesAction {
 
   Future<void> deleteProfile(int id) async {
     await ref.read(profilesProvider.notifier).del(id);
-    await clearEffect(id);
     await preferences.forgetSubscriptionHwid(id);
+    await clearEffect(id);
     final currentProfileId = ref.read(currentProfileIdProvider);
     if (currentProfileId == id) {
       final profiles = ref.read(profilesProvider);
@@ -89,7 +89,7 @@ class ProfilesAction extends _$ProfilesAction {
     if (_hwidSubscriptionChanged(profile)) {
       unawaited(
         globalState.safeRun(
-          () => preferences.forgetSubscriptionHwid(profile.id),
+          () => preferences.revokeSubscriptionHwid(profile.id),
         ),
       );
     }
@@ -177,7 +177,7 @@ class ProfilesAction extends _$ProfilesAction {
         : null;
     try {
       if (_hwidSubscriptionChanged(profile)) {
-        await preferences.forgetSubscriptionHwid(profile.id);
+        await preferences.revokeSubscriptionHwid(profile.id);
       }
       ref.read(profilesProvider.notifier).put(profile);
       final updated = await profile.update(
@@ -403,7 +403,7 @@ class ProfilesAction extends _$ProfilesAction {
       tag: LoadingTag.profiles,
       () => link.isShareLink
           ? _fromShareLinks(Profile.normal(label: label), [link])
-          : _withAgeSecretKey(
+          : _importSubscription(
               Profile.normal(
                 label: label,
                 url: link,
@@ -466,13 +466,29 @@ class ProfilesAction extends _$ProfilesAction {
       ],
       (item) async => putProfile(
         await (item.shareLinks.isEmpty
-            ? _download(item.profile)
+            ? _importSubscription(item.profile)
             : _fromShareLinks(item.profile, item.shareLinks)),
       ),
       label: (item) => item.shareLinks.firstOrNull ?? item.profile.url,
       concurrency: maxConcurrentImports,
       tag: LoadingTag.profiles,
     );
+  }
+
+  Future<Profile> _importSubscription(
+    Profile profile, [
+    Future<Profile> Function(Profile)? download,
+  ]) async {
+    try {
+      return await (download == null
+          ? _download(profile)
+          : _withAgeSecretKey(profile, download));
+    } catch (_) {
+      if (profile.hwidSubscriptionUri != null) {
+        await preferences.forgetSubscriptionHwid(profile.id);
+      }
+      rethrow;
+    }
   }
 
   Future<Profile> _download(

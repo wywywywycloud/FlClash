@@ -336,7 +336,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String subscriptionHwidRequest(String host) {
-    return 'Подписка с $host запрашивает идентификатор устройства (HWID). Разрешить отправку?';
+    return 'Разрешить отправлять на $host случайный идентификатор (HWID), созданный только для этой подписки?';
   }
 
   @override
@@ -344,7 +344,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String disableGlobalHwidMessage(int count) {
-    return 'Отключить отправку HWID и для текущих подписок? Подписок с включённой отправкой — $count. После отключения некоторые могут перестать обновляться. Если сохранить отправку, их серверы продолжат получать идентификатор устройства.';
+    return 'Отключить отправку HWID и для текущих подписок? Подписок с включённой отправкой — $count. После отключения некоторые могут перестать обновляться. Если сохранить отправку, серверы продолжат получать отдельный идентификатор каждой подписки.';
   }
 
   @override

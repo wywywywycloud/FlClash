@@ -338,7 +338,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String subscriptionHwidRequest(String host) {
-    return 'L’abonnement de $host demande l’identifiant de votre appareil (HWID). Autoriser son partage ?';
+    return 'Autoriser l’envoi à $host d’un identifiant aléatoire (HWID) propre à cet abonnement ?';
   }
 
   @override
@@ -346,7 +346,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String disableGlobalHwidMessage(int count) {
-    return 'Désactiver aussi le partage du HWID pour les abonnements actuels ? Il est activé pour $count abonnements. Le désactiver peut empêcher certaines mises à jour. Le conserver permet à leurs serveurs de continuer à recevoir l’identifiant de l’appareil.';
+    return 'Désactiver aussi le partage du HWID pour les abonnements actuels ? Il est activé pour $count abonnements. Le désactiver peut empêcher certaines mises à jour. Le conserver permet à leurs serveurs de continuer à recevoir l’identifiant propre à chaque abonnement.';
   }
 
   @override

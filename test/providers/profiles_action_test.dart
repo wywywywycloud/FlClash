@@ -130,7 +130,44 @@ void main() {
       expect(container.read(profilesProvider), hasLength(2));
       expect(adapter.hwids, hasLength(2));
       expect(adapter.hwids.first, isNotNull);
-      expect(adapter.hwids.last, adapter.hwids.first);
+      expect(adapter.hwids.last, isNotNull);
+      expect(adapter.hwids.last, isNot(adapter.hwids.first));
+      final first = container.read(profilesProvider).first;
+      final firstHwid = adapter.hwids.first;
+      await preferences.setGlobalSubscriptionHwid(enabled: false);
+      expect(await preferences.subscriptionHwid(first), isNull);
+      await preferences.setGlobalSubscriptionHwid(enabled: true);
+      await first.update(validate: (_, _) async => null);
+      expect(adapter.hwids.last, firstHwid);
+    });
+
+    test('reimporting the same URL gets a new HWID', () async {
+      final adapter = useSubscription(requiresHwid: true);
+      final action = container.read(profilesActionProvider.notifier);
+      Future<void> add() =>
+          action.addProfileFromLink(url, confirmHwid: () async => true);
+      await add();
+      final first = container.read(profilesProvider).single;
+      final firstHwid = adapter.hwids.last;
+      await add();
+      final second = container.read(profilesProvider).last;
+      final secondHwid = adapter.hwids.last;
+      await action.deleteProfile(first.id);
+      await add();
+      final thirdHwid = adapter.hwids.last;
+      await preferences.rebind();
+      await second.update(validate: (_, _) async => null);
+      expect(adapter.hwids, [
+        null,
+        firstHwid,
+        null,
+        secondHwid,
+        null,
+        thirdHwid,
+        secondHwid,
+      ]);
+      expect({firstHwid, secondHwid, thirdHwid}, hasLength(3));
+      expect([firstHwid, secondHwid, thirdHwid], everyElement(isNotNull));
     });
 
     for (final requiresHwid in [false, true]) {
