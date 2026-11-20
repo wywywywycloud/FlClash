@@ -343,6 +343,28 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get globalHwid => 'Отправлять HWID всем подпискам';
+
+  @override
+  String get globalHwidDescription =>
+      'Идентификатор устройства отправляется при загрузке любой текущей или будущей HTTPS-подписки.';
+
+  @override
+  String get disableGlobalHwidTitle =>
+      'Отключить отправку HWID и для текущих подписок?';
+
+  @override
+  String disableGlobalHwidMessage(int count) {
+    return 'Подписок с включённой отправкой — $count. После отключения некоторые подписки могут перестать обновляться. Если сохранить отправку, их серверы продолжат получать идентификатор устройства.';
+  }
+
+  @override
+  String get disableGlobalHwidYes => 'Да, отключить';
+
+  @override
+  String get disableGlobalHwidNo => 'Нет, сохранить';
+
+  @override
   String get create => 'Создать';
 
   @override

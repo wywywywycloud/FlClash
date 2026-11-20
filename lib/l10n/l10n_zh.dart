@@ -332,6 +332,26 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get globalHwid => '向所有订阅共享 HWID';
+
+  @override
+  String get globalHwidDescription => '下载任何现有或将来的 HTTPS 订阅时发送设备标识符。';
+
+  @override
+  String get disableGlobalHwidTitle => '是否也关闭现有订阅的 HWID 共享？';
+
+  @override
+  String disableGlobalHwidMessage(int count) {
+    return '已为 $count 个订阅开启 HWID 共享。关闭后，部分订阅可能无法更新。保留共享时，这些订阅的服务器将继续收到设备标识符。';
+  }
+
+  @override
+  String get disableGlobalHwidYes => '是，关闭共享';
+
+  @override
+  String get disableGlobalHwidNo => '否，保留共享';
+
+  @override
   String get create => '创建';
 
   @override

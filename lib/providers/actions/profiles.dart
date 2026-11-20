@@ -388,6 +388,12 @@ class ProfilesAction extends _$ProfilesAction {
   }) async {
     _showProfiles();
     var approvedBeforeDownload = false;
+    Future<bool> requestHwidConsent() async {
+      return confirmHwid != null &&
+          !await preferences.globalSubscriptionHwidEnabled &&
+          await confirmHwid() == true;
+    }
+
     final profile = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () => link.isShareLink
@@ -405,9 +411,8 @@ class ProfilesAction extends _$ProfilesAction {
                   );
                 } on DioException catch (error) {
                   if (approvedBeforeDownload ||
-                      confirmHwid == null ||
                       error.response?.statusCode != HttpStatus.notFound ||
-                      await confirmHwid() != true) {
+                      !await requestHwidConsent()) {
                     rethrow;
                   }
                   approvedBeforeDownload = true;
@@ -419,8 +424,7 @@ class ProfilesAction extends _$ProfilesAction {
     );
     if (profile == null) return;
     putProfile(profile);
-    if (confirmHwid == null ||
-        !approvedBeforeDownload && await confirmHwid() != true) {
+    if (!approvedBeforeDownload && !await requestHwidConsent()) {
       return;
     }
     await globalState.safeRun(

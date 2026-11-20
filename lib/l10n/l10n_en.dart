@@ -341,6 +341,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get globalHwid => 'Share HWID with all subscriptions';
+
+  @override
+  String get globalHwidDescription =>
+      'Send a device identifier when downloading any current or future HTTPS subscription.';
+
+  @override
+  String get disableGlobalHwidTitle =>
+      'Turn off HWID sharing for current subscriptions?';
+
+  @override
+  String disableGlobalHwidMessage(int count) {
+    return 'HWID sharing is enabled for $count subscriptions. Turning it off may stop some subscriptions from updating. Keeping it enabled lets their servers continue to receive the device identifier.';
+  }
+
+  @override
+  String get disableGlobalHwidYes => 'Yes, turn off';
+
+  @override
+  String get disableGlobalHwidNo => 'No, keep sharing';
+
+  @override
   String get create => 'Create';
 
   @override

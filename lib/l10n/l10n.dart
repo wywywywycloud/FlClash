@@ -744,6 +744,42 @@ abstract class AppLocalizations {
   /// **'The subscription from {host} requests your device identifier (HWID). Allow sharing it?'**
   String subscriptionHwidRequest(String host);
 
+  /// No description provided for @globalHwid.
+  ///
+  /// In en, this message translates to:
+  /// **'Share HWID with all subscriptions'**
+  String get globalHwid;
+
+  /// No description provided for @globalHwidDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a device identifier when downloading any current or future HTTPS subscription.'**
+  String get globalHwidDescription;
+
+  /// No description provided for @disableGlobalHwidTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off HWID sharing for current subscriptions?'**
+  String get disableGlobalHwidTitle;
+
+  /// No description provided for @disableGlobalHwidMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'HWID sharing is enabled for {count} subscriptions. Turning it off may stop some subscriptions from updating. Keeping it enabled lets their servers continue to receive the device identifier.'**
+  String disableGlobalHwidMessage(int count);
+
+  /// No description provided for @disableGlobalHwidYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, turn off'**
+  String get disableGlobalHwidYes;
+
+  /// No description provided for @disableGlobalHwidNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No, keep sharing'**
+  String get disableGlobalHwidNo;
+
   /// No description provided for @create.
   ///
   /// In en, this message translates to:

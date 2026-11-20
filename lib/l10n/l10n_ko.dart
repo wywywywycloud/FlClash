@@ -333,6 +333,27 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get globalHwid => '모든 구독에 HWID 공유';
+
+  @override
+  String get globalHwidDescription =>
+      '현재 및 향후 HTTPS 구독을 다운로드할 때 기기 식별자를 전송합니다.';
+
+  @override
+  String get disableGlobalHwidTitle => '현재 구독의 HWID 공유도 끄시겠습니까?';
+
+  @override
+  String disableGlobalHwidMessage(int count) {
+    return '구독 $count개에 HWID 공유가 켜져 있습니다. 공유를 끄면 일부 구독이 업데이트되지 않을 수 있습니다. 공유를 유지하면 해당 서버가 기기 식별자를 계속 받습니다.';
+  }
+
+  @override
+  String get disableGlobalHwidYes => '예, 끄기';
+
+  @override
+  String get disableGlobalHwidNo => '아니요, 유지';
+
+  @override
   String get create => '만들기';
 
   @override

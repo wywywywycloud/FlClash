@@ -334,6 +334,27 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get globalHwid => 'すべてのサブスクリプションで HWID を共有';
+
+  @override
+  String get globalHwidDescription =>
+      '現在および今後の HTTPS サブスクリプションをダウンロードするときにデバイス識別子を送信します。';
+
+  @override
+  String get disableGlobalHwidTitle => '現在のサブスクリプションの HWID 共有も無効にしますか？';
+
+  @override
+  String disableGlobalHwidMessage(int count) {
+    return 'HWID を共有するサブスクリプションは $count 件です。無効にすると、一部のサブスクリプションを更新できなくなる場合があります。共有を続けると、それらのサーバーはデバイス識別子を引き続き受信します。';
+  }
+
+  @override
+  String get disableGlobalHwidYes => 'はい、無効にする';
+
+  @override
+  String get disableGlobalHwidNo => 'いいえ、共有を続ける';
+
+  @override
   String get create => '作成';
 
   @override

@@ -145,17 +145,14 @@ class Preferences {
     Profile profile, {
     bool allowedForImport = false,
   }) async {
-    final uri = profile.url.webUri;
-    if (profile.type != ProfileType.url ||
-        uri == null ||
-        uri.scheme != 'https') {
-      return null;
-    }
+    final uri = profile.hwidSubscriptionUri;
+    if (uri == null) return null;
     return _withHwidStore((store) async {
-      if (store == null ||
+      if (store == null) return null;
+      final policy = _hwidPolicy(store);
+      if (!policy.global &&
           !allowedForImport &&
-              _hwidConsents(store)['${profile.id}'] !=
-                  _urlDigest(profile.url)) {
+          policy.consents['${profile.id}'] != _urlDigest(profile.url)) {
         return null;
       }
       var seed = store.getString(_hwidSeedKey);
@@ -174,19 +171,44 @@ class Preferences {
   Future<void> allowSubscriptionHwid(Profile profile) {
     return _withHwidStore((store) async {
       if (store == null) throw StateError('Preferences are unavailable');
-      final consents = _hwidConsents(store);
-      consents['${profile.id}'] = _urlDigest(profile.url);
-      await _saveHwidConsents(store, consents);
+      final policy = _hwidPolicy(store);
+      policy.consents['${profile.id}'] = _urlDigest(profile.url);
+      await _saveHwidPolicy(store, policy);
     });
   }
 
   Future<void> forgetSubscriptionHwid(int profileId) {
     return _withHwidStore((store) async {
       if (store == null) return;
-      final consents = _hwidConsents(store);
-      if (consents.remove('$profileId') != null) {
-        await _saveHwidConsents(store, consents);
+      final policy = _hwidPolicy(store);
+      if (policy.consents.remove('$profileId') != null) {
+        await _saveHwidPolicy(store, policy);
       }
+    });
+  }
+
+  Future<bool> get globalSubscriptionHwidEnabled => _withHwidStore(
+    (store) async => store != null && _hwidPolicy(store).global,
+  );
+
+  Future<void> setGlobalSubscriptionHwid({
+    required bool enabled,
+    Iterable<Profile> keepSharing = const [],
+  }) {
+    return _withHwidStore((store) async {
+      if (store == null) throw StateError('Preferences are unavailable');
+      final policy = _hwidPolicy(store);
+      if (policy.global == enabled) return;
+      await _saveHwidPolicy(store, (
+        global: enabled,
+        consents: enabled
+            ? policy.consents
+            : {
+                for (final profile in keepSharing)
+                  if (profile.hwidSubscriptionUri != null)
+                    '${profile.id}': _urlDigest(profile.url),
+              },
+      ));
     });
   }
 
@@ -204,27 +226,32 @@ class Preferences {
     }
   }
 
-  Map<String, String> _hwidConsents(SharedPreferences store) {
+  ({bool global, Map<String, String> consents}) _hwidPolicy(
+    SharedPreferences store,
+  ) {
     final saved = store.getString(_hwidConsentKey);
-    if (saved == null) return {};
+    if (saved == null) return (global: false, consents: {});
     try {
       final policy = json.decode(saved) as Map<String, dynamic>;
-      return Map<String, String>.from(policy['profiles'] as Map);
+      return (
+        global: policy['global'] == true,
+        consents: Map<String, String>.from(policy['profiles'] as Map),
+      );
     } on FormatException {
-      return {};
+      return (global: false, consents: {});
     } on TypeError {
-      return {};
+      return (global: false, consents: {});
     }
   }
 
-  Future<void> _saveHwidConsents(
+  Future<void> _saveHwidPolicy(
     SharedPreferences store,
-    Map<String, String> consents,
+    ({bool global, Map<String, String> consents}) policy,
   ) {
     return _saveHwidValue(
       store,
       _hwidConsentKey,
-      json.encode({'profiles': consents}),
+      json.encode({'global': policy.global, 'profiles': policy.consents}),
     );
   }
 

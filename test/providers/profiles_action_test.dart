@@ -105,6 +105,29 @@ void main() {
   group('HWID on subscription import', () {
     const url = 'https://subscriptions.example/sub';
 
+    test('global HWID applies on the first request without asking', () async {
+      await mockPreferences();
+      await preferences.setGlobalSubscriptionHwid(enabled: true);
+      final adapter = _SubscriptionAdapter(requiresHwid: true);
+      final original = request.subscriptionDio.httpClientAdapter;
+      request.subscriptionDio.httpClientAdapter = adapter;
+      addTearDown(() => request.subscriptionDio.httpClientAdapter = original);
+
+      final action = container.read(profilesActionProvider.notifier);
+      await action.addProfileFromLink(
+        url,
+        confirmHwid: () async {
+          fail('The global setting already allows sharing');
+        },
+      );
+      await action.addProfileFromLink(url);
+
+      expect(container.read(profilesProvider), hasLength(2));
+      expect(adapter.hwids, hasLength(2));
+      expect(adapter.hwids.first, isNotNull);
+      expect(adapter.hwids.last, adapter.hwids.first);
+    });
+
     for (final requiresHwid in [false, true]) {
       test('allows HWID after consent (required: $requiresHwid)', () async {
         await mockPreferences();
