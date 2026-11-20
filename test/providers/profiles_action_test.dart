@@ -115,6 +115,32 @@ void main() {
       return adapter;
     }
 
+    test('global HWID sends on the first request without asking', () async {
+      await preferences.setGlobalSubscriptionHwid(enabled: true);
+      final adapter = useSubscription(requiresHwid: true);
+      final action = container.read(profilesActionProvider.notifier);
+      await action.addProfileFromLink(
+        url,
+        confirmHwid: () async {
+          fail('The global setting already allows sharing');
+        },
+      );
+      await action.addProfileFromLink(url);
+
+      expect(container.read(profilesProvider), hasLength(2));
+      expect(adapter.hwids, hasLength(2));
+      expect(adapter.hwids.first, isNotNull);
+      expect(adapter.hwids.last, isNotNull);
+      expect(adapter.hwids.last, isNot(adapter.hwids.first));
+      final first = container.read(profilesProvider).first;
+      final firstHwid = adapter.hwids.first;
+      await preferences.setGlobalSubscriptionHwid(enabled: false);
+      expect(await preferences.subscriptionHwid(first), isNull);
+      await preferences.setGlobalSubscriptionHwid(enabled: true);
+      await first.update(validate: (_, _) async => null);
+      expect(adapter.hwids.last, firstHwid);
+    });
+
     test('reimporting the same URL gets a new HWID', () async {
       final adapter = useSubscription(requiresHwid: true);
       final action = container.read(profilesActionProvider.notifier);

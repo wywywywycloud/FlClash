@@ -340,6 +340,14 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get globalHwid => 'Отправлять HWID всем HTTPS-подпискам';
+
+  @override
+  String disableGlobalHwidMessage(int count) {
+    return 'Отключить отправку HWID и для текущих подписок? Подписок с включённой отправкой — $count. После отключения некоторые могут перестать обновляться. Если сохранить отправку, серверы продолжат получать отдельный идентификатор каждой подписки.';
+  }
+
+  @override
   String get create => 'Создать';
 
   @override

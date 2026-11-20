@@ -330,6 +330,14 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get globalHwid => '모든 HTTPS 구독에 HWID 공유';
+
+  @override
+  String disableGlobalHwidMessage(int count) {
+    return '현재 구독에서도 HWID 공유를 끄시겠습니까? 구독 $count개에서 공유 중입니다. 끄면 업데이트되지 않을 수 있습니다. 공유를 유지하면 해당 서버가 구독별 식별자를 계속 받습니다.';
+  }
+
+  @override
   String get create => '만들기';
 
   @override

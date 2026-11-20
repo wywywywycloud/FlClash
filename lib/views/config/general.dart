@@ -5,6 +5,7 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/mitm.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/config/on_demand.dart';
 import 'package:fl_clash/views/config/override.dart';
 import 'package:fl_clash/views/config/user_agents.dart';
@@ -46,6 +47,72 @@ class UaItem extends ConsumerWidget {
       title: Text(appLocalizations.userAgent),
       subtitle: Text(globalUa ?? appLocalizations.defaultText),
       widget: const UserAgentsView(),
+    );
+  }
+}
+
+final _globalHwidProvider = FutureProvider<bool>(
+  (ref) => preferences.globalSubscriptionHwidEnabled,
+);
+
+class _GlobalHwidItem extends ConsumerStatefulWidget {
+  const _GlobalHwidItem();
+
+  @override
+  ConsumerState<_GlobalHwidItem> createState() => _GlobalHwidItemState();
+}
+
+class _GlobalHwidItemState extends ConsumerState<_GlobalHwidItem> {
+  var _changing = false;
+
+  Iterable<Profile> get _subscriptions => ref
+      .read(profilesProvider)
+      .where((profile) => profile.hwidSubscriptionUri != null);
+
+  Future<void> _setEnabled(bool enabled) async {
+    if (_changing) return;
+    setState(() => _changing = true);
+    try {
+      final l10n = context.appLocalizations;
+      final shown = {
+        if (!enabled)
+          for (final p in _subscriptions) (p.id, p.url),
+      };
+      var keepSharing = false;
+      if (shown.isNotEmpty) {
+        final keep = await dialogs.showMessage(
+          context: context,
+          message: TextSpan(text: l10n.disableGlobalHwidMessage(shown.length)),
+          cancelText: l10n.yes,
+          confirmText: l10n.no,
+        );
+        if (!mounted || keep == null) return;
+        keepSharing = keep;
+      }
+      await globalState.safeRun(
+        () => preferences.setGlobalSubscriptionHwid(
+          enabled: enabled,
+          keepSharing: keepSharing
+              ? _subscriptions.where((p) => shown.contains((p.id, p.url)))
+              : const [],
+        ),
+        title: l10n.globalHwid,
+        silence: false,
+      );
+      if (mounted) ref.invalidate(_globalHwidProvider);
+    } finally {
+      if (mounted) setState(() => _changing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ready = ref.watch(_globalHwidProvider).hasValue;
+    return ConfigToggleItem(
+      title: (l) => l.globalHwid,
+      selector: _globalHwidProvider.select((state) => state.value ?? false),
+      onChanged: (_, enabled) => _setEnabled(enabled),
+      enabled: ready && !_changing,
     );
   }
 }
@@ -355,6 +422,7 @@ class GeneralView extends ConsumerWidget {
   List<Widget> _requestItems() {
     return [
       const UaItem(),
+      const _GlobalHwidItem(),
       _appSettingToggle(
         title: (l) => l.checkCertificate,
         select: (state) => state.checkCertificate,

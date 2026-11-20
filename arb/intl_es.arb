@@ -104,6 +104,8 @@
   "submit": "Enviar",
   "createProfileFromUrlTip": "¿Quieres crear un perfil a partir de {url}?",
   "subscriptionHwidRequest": "¿Permitir que se envíe a {host} un identificador aleatorio (HWID) exclusivo de esta suscripción?",
+  "globalHwid": "Compartir el HWID con todas las suscripciones HTTPS",
+  "disableGlobalHwidMessage": "¿Desactivar también el envío del HWID para las suscripciones actuales? Está activado para {count}. Si lo desactivas, podrían dejar de actualizarse. Si lo mantienes, sus servidores seguirán recibiendo el identificador propio de cada suscripción.",
   "create": "Crear",
   "pleaseUploadValidQrcode": "Sube un código QR válido",
   "blacklistMode": "Modo lista negra",

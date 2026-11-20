@@ -342,6 +342,15 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get globalHwid =>
+      'Compartir el HWID con todas las suscripciones HTTPS';
+
+  @override
+  String disableGlobalHwidMessage(int count) {
+    return '¿Desactivar también el envío del HWID para las suscripciones actuales? Está activado para $count. Si lo desactivas, podrían dejar de actualizarse. Si lo mantienes, sus servidores seguirán recibiendo el identificador propio de cada suscripción.';
+  }
+
+  @override
   String get create => 'Crear';
 
   @override

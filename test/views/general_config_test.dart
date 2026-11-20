@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/preferences.dart';
 import '../helpers/test_app.dart';
 import '../helpers/test_profiles.dart';
 import 'package:prism_ui/prism_ui.dart';
@@ -45,6 +46,70 @@ void main() {
   }
 
   PatchClashConfig config() => container.read(patchClashConfigProvider);
+
+  for (final choice in [true, false, null]) {
+    testWidgets('switching off global HWID honors the answer $choice', (
+      tester,
+    ) async {
+      await mockPreferences();
+      final allowed = Profile.normal(url: 'https://example.com/allowed');
+      final other = Profile.normal(url: 'https://example.com/other');
+      final http = Profile.normal(url: 'http://example.com/legacy');
+      final future = Profile.normal(url: 'https://example.com/future');
+      container.read(profilesProvider.notifier)
+        ..put(allowed)
+        ..put(other)
+        ..put(http);
+      await preferences.allowSubscriptionHwid(allowed);
+      await pumpGeneralView(tester);
+      final l = currentAppLocalizations;
+
+      await tester.tap(find.text(l.globalHwid));
+      await tester.pumpAndSettle();
+      expect(await preferences.globalSubscriptionHwidEnabled, isTrue);
+      expect(await preferences.subscriptionHwid(http), isNull);
+
+      await tester.tap(find.text(l.globalHwid));
+      await tester.pumpAndSettle();
+      expect(find.text(l.disableGlobalHwidMessage(2)), findsOneWidget);
+      container.read(profilesProvider.notifier).put(future);
+      final yes = find.text(l.yes);
+      final no = find.text(l.no);
+      expect(tester.getCenter(no).dx, greaterThan(tester.getCenter(yes).dx));
+      if (choice == null) {
+        Navigator.of(tester.element(yes)).pop();
+      } else {
+        await tester.tap(choice ? yes : no);
+      }
+      await tester.pumpAndSettle();
+
+      await preferences.rebind();
+      expect(await preferences.globalSubscriptionHwidEnabled, choice == null);
+      final currentExpectation = choice == true ? isNull : isNotNull;
+      expect(await preferences.subscriptionHwid(allowed), currentExpectation);
+      expect(await preferences.subscriptionHwid(other), currentExpectation);
+      expect(
+        await preferences.subscriptionHwid(future),
+        choice == null ? isNotNull : isNull,
+      );
+    });
+  }
+
+  testWidgets(
+    'global HWID switches off without a prompt if no profile uses it',
+    (tester) async {
+      await mockPreferences();
+      await preferences.setGlobalSubscriptionHwid(enabled: true);
+      await pumpGeneralView(tester);
+      final l = currentAppLocalizations;
+
+      await tester.tap(find.text(l.globalHwid));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(await preferences.globalSubscriptionHwidEnabled, isFalse);
+    },
+  );
 
   testWidgets('lists no override until one is added', (tester) async {
     await pumpGeneralView(tester);

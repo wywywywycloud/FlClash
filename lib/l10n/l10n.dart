@@ -738,6 +738,18 @@ abstract class AppLocalizations {
   /// **'Allow sending {host} a random identifier (HWID) unique to this subscription?'**
   String subscriptionHwidRequest(String host);
 
+  /// No description provided for @globalHwid.
+  ///
+  /// In en, this message translates to:
+  /// **'Share HWID with all HTTPS subscriptions'**
+  String get globalHwid;
+
+  /// No description provided for @disableGlobalHwidMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off HWID sharing for current subscriptions? Sharing is enabled for {count}. Turning it off may prevent updates. Keeping it enabled lets those servers continue to receive each subscription’s identifier.'**
+  String disableGlobalHwidMessage(int count);
+
   /// No description provided for @create.
   ///
   /// In en, this message translates to:

@@ -342,6 +342,14 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get globalHwid => 'Partager le HWID avec tous les abonnements HTTPS';
+
+  @override
+  String disableGlobalHwidMessage(int count) {
+    return 'Désactiver aussi le partage du HWID pour les abonnements actuels ? Il est activé pour $count abonnements. Le désactiver peut empêcher certaines mises à jour. Le conserver permet à leurs serveurs de continuer à recevoir l’identifiant propre à chaque abonnement.';
+  }
+
+  @override
   String get create => 'Créer';
 
   @override

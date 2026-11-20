@@ -147,7 +147,8 @@ class Preferences {
     return _withHwidStore((store) async {
       if (store == null) return null;
       final policy = _readHwidPolicy(store);
-      if (!allowedForImport &&
+      if (policy['global'] != true &&
+          !allowedForImport &&
           _hwidMap(policy['profiles'])['${profile.id}'] !=
               _digest(profile.url)) {
         return null;
@@ -170,6 +171,29 @@ class Preferences {
 
   Future<void> forgetSubscriptionHwid(int profileId) =>
       _setSubscriptionHwid(profileId, null, forget: true);
+
+  Future<bool> get globalSubscriptionHwidEnabled => _withHwidStore(
+    (store) async => store != null && _readHwidPolicy(store)['global'] == true,
+  );
+
+  Future<void> setGlobalSubscriptionHwid({
+    required bool enabled,
+    Iterable<Profile> keepSharing = const [],
+  }) => _withHwidStore((store) async {
+    if (store == null) throw StateError('Preferences are unavailable');
+    final policy = _readHwidPolicy(store);
+    if ((policy['global'] == true) == enabled) return;
+    await _saveHwidPolicy(store, {
+      ...policy,
+      'global': enabled,
+      if (!enabled)
+        'profiles': {
+          for (final profile in keepSharing)
+            if (profile.hwidSubscriptionUri != null)
+              '${profile.id}': _digest(profile.url),
+        },
+    });
+  });
 
   Future<void> _setSubscriptionHwid(
     int id,
