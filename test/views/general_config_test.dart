@@ -72,6 +72,7 @@ void main() {
       await tester.tap(find.text(l.globalHwid));
       await tester.pumpAndSettle();
       expect(find.text(l.disableGlobalHwidMessage(2)), findsOneWidget);
+      container.read(profilesProvider.notifier).put(future);
       final yes = find.text(l.yes);
       final no = find.text(l.no);
       expect(tester.getCenter(no).dx, greaterThan(tester.getCenter(yes).dx));

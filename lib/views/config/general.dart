@@ -74,12 +74,15 @@ class _GlobalHwidItemState extends ConsumerState<_GlobalHwidItem> {
     setState(() => _changing = true);
     try {
       final l10n = context.appLocalizations;
-      final count = enabled ? 0 : _subscriptions.length;
+      final shown = {
+        if (!enabled)
+          for (final p in _subscriptions) (p.id, p.url),
+      };
       var keepSharing = false;
-      if (count > 0) {
+      if (shown.isNotEmpty) {
         final keep = await dialogs.showMessage(
           context: context,
-          message: TextSpan(text: l10n.disableGlobalHwidMessage(count)),
+          message: TextSpan(text: l10n.disableGlobalHwidMessage(shown.length)),
           cancelText: l10n.yes,
           confirmText: l10n.no,
         );
@@ -89,7 +92,9 @@ class _GlobalHwidItemState extends ConsumerState<_GlobalHwidItem> {
       await globalState.safeRun(
         () => preferences.setGlobalSubscriptionHwid(
           enabled: enabled,
-          keepSharing: keepSharing ? _subscriptions : const [],
+          keepSharing: keepSharing
+              ? _subscriptions.where((p) => shown.contains((p.id, p.url)))
+              : const [],
         ),
         title: l10n.globalHwid,
         silence: false,
