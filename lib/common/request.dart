@@ -69,22 +69,46 @@ class Request {
   }) {
     final target = downloadTarget(url);
     final cancelToken = CancelToken();
-    final download = hwid != null && target.uri.scheme == 'https'
-        ? _downloadWithHwid<T>(
-            target.uri,
-            {...target.headers, 'X-HWID': hwid},
-            responseType,
-            cancelToken,
-          )
-        : _clashDio.getUri<T>(
-            target.uri,
+    final shareHwid = hwid != null && target.uri.scheme == 'https';
+
+    Future<Response<T>> fetch() async {
+      var uri = target.uri;
+      var headers = {...target.headers, if (shareHwid) 'X-HWID': hwid};
+      const redirectCodes = {301, 302, 303, 307, 308};
+      for (var redirects = 0; ; redirects++) {
+        try {
+          return await _clashDio.getUri<T>(
+            uri,
             options: Options(
               responseType: responseType,
-              headers: target.headers,
+              headers: headers,
+              followRedirects: !shareHwid,
             ),
             cancelToken: cancelToken,
           );
-    return download.timeout(
+        } on DioException catch (error) {
+          if (!shareHwid ||
+              redirects >= 5 ||
+              !redirectCodes.contains(error.response?.statusCode)) {
+            rethrow;
+          }
+          final location = error.response!.headers.value(
+            HttpHeaders.locationHeader,
+          );
+          final relative = location == null ? null : Uri.tryParse(location);
+          final next = relative == null ? null : uri.resolveUri(relative);
+          if (next == null ||
+              next.host.isEmpty ||
+              next.scheme != 'http' && next.scheme != 'https') {
+            rethrow;
+          }
+          if (next.origin != uri.origin) headers = const {};
+          uri = next.replace(userInfo: '');
+        }
+      }
+    }
+
+    return fetch().timeout(
       downloadTimeoutDuration,
       onTimeout: () {
         cancelToken.cancel();
@@ -94,46 +118,6 @@ class Request {
         );
       },
     );
-  }
-
-  Future<Response<T>> _downloadWithHwid<T>(
-    Uri uri,
-    Map<String, Object> headers,
-    ResponseType responseType,
-    CancelToken cancelToken,
-  ) async {
-    const redirectCodes = {301, 302, 303, 307, 308};
-    for (var redirects = 0; ; redirects++) {
-      final response = await _clashDio.getUri<T>(
-        uri,
-        options: Options(
-          responseType: responseType,
-          headers: headers,
-          followRedirects: false,
-          validateStatus: (status) =>
-              status != null &&
-              (status >= 200 && status < 300 || redirectCodes.contains(status)),
-        ),
-        cancelToken: cancelToken,
-      );
-      final status = response.statusCode!;
-      if (!redirectCodes.contains(status)) return response;
-      final location = response.headers.value(HttpHeaders.locationHeader);
-      final relative = location == null ? null : Uri.tryParse(location);
-      final next = relative == null ? null : uri.resolveUri(relative);
-      if (redirects >= 5 ||
-          next == null ||
-          next.host.isEmpty ||
-          next.scheme != 'http' && next.scheme != 'https') {
-        throw DioException.badResponse(
-          statusCode: status,
-          requestOptions: response.requestOptions,
-          response: response,
-        );
-      }
-      if (next.origin != uri.origin) headers = const {};
-      uri = next.replace(userInfo: '');
-    }
   }
 
   Future<Response<Uint8List>> getFileResponseForUrl(

@@ -103,7 +103,6 @@
   "qrcodeTooLongTip": "Ce lien est trop long pour un code QR. Utilisez Copier le lien.",
   "submit": "Valider",
   "createProfileFromUrlTip": "Créer un profil à partir de {url} ?",
-  "hwidSharing": "Partage du HWID",
   "subscriptionHwidRequest": "L’abonnement de {host} demande l’identifiant de votre appareil (HWID). Autoriser son partage ?",
   "create": "Créer",
   "pleaseUploadValidQrcode": "Veuillez importer un code QR valide",

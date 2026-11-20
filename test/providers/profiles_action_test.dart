@@ -105,13 +105,19 @@ void main() {
   group('HWID on subscription import', () {
     const url = 'https://subscriptions.example/sub';
 
+    setUp(() => mockPreferences());
+
+    _SubscriptionAdapter useSubscription({bool requiresHwid = false}) {
+      final adapter = _SubscriptionAdapter(requiresHwid: requiresHwid);
+      final original = request.subscriptionDio.httpClientAdapter;
+      request.subscriptionDio.httpClientAdapter = adapter;
+      addTearDown(() => request.subscriptionDio.httpClientAdapter = original);
+      return adapter;
+    }
+
     for (final requiresHwid in [false, true]) {
       test('allows HWID after consent (required: $requiresHwid)', () async {
-        await mockPreferences();
-        final adapter = _SubscriptionAdapter(requiresHwid: requiresHwid);
-        final original = request.subscriptionDio.httpClientAdapter;
-        request.subscriptionDio.httpClientAdapter = adapter;
-        addTearDown(() => request.subscriptionDio.httpClientAdapter = original);
+        final adapter = useSubscription(requiresHwid: requiresHwid);
 
         await container
             .read(profilesActionProvider.notifier)
@@ -137,11 +143,7 @@ void main() {
     }
 
     test('keeps the imported profile when HWID sharing is declined', () async {
-      await mockPreferences();
-      final adapter = _SubscriptionAdapter(requiresHwid: false);
-      final original = request.subscriptionDio.httpClientAdapter;
-      request.subscriptionDio.httpClientAdapter = adapter;
-      addTearDown(() => request.subscriptionDio.httpClientAdapter = original);
+      final adapter = useSubscription();
 
       await container
           .read(profilesActionProvider.notifier)

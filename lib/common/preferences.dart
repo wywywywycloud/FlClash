@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:fl_clash/common/boot_record.dart';
@@ -14,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Preferences {
   static Preferences? _instance;
   var _store = ResolveOnce(_open);
-  Completer<void>? _hwidWrite;
+  final _hwidQueue = TaskPool(1);
 
   static const _hwidConsentKey = 'subscriptionHwidConsent';
   static const _hwidSeedKey = 'subscriptionHwidSeed';
@@ -152,16 +151,15 @@ class Preferences {
       return null;
     }
     return _withHwidStore((store) async {
-      if (store == null ||
-          !allowedForImport &&
-              _hwidConsents(store)['${profile.id}'] !=
-                  _urlDigest(profile.url)) {
+      if (store == null) return null;
+      final policy = _readHwidPolicy(store);
+      if (!allowedForImport &&
+          _hwidConsents(policy)['${profile.id}'] != _urlDigest(profile.url)) {
         return null;
       }
       var seed = store.getString(_hwidSeedKey);
       if (seed == null) {
-        final random = Random.secure();
-        seed = base64.encode(List.generate(32, (_) => random.nextInt(256)));
+        seed = base64.encode(ascii.encode(generateRandomSecret(43)));
         await _saveHwidValue(store, _hwidSeedKey, seed);
       }
       return Hmac(
@@ -171,62 +169,51 @@ class Preferences {
     });
   }
 
-  Future<void> allowSubscriptionHwid(Profile profile) {
-    return _withHwidStore((store) async {
-      if (store == null) throw StateError('Preferences are unavailable');
-      final consents = _hwidConsents(store);
-      consents['${profile.id}'] = _urlDigest(profile.url);
-      await _saveHwidConsents(store, consents);
-    });
-  }
+  Future<void> allowSubscriptionHwid(Profile profile) =>
+      _setSubscriptionHwid(profile.id, profile.url);
 
-  Future<void> forgetSubscriptionHwid(int profileId) {
+  Future<void> forgetSubscriptionHwid(int profileId) =>
+      _setSubscriptionHwid(profileId, null);
+
+  Future<void> _setSubscriptionHwid(int id, String? url) {
     return _withHwidStore((store) async {
-      if (store == null) return;
-      final consents = _hwidConsents(store);
-      if (consents.remove('$profileId') != null) {
-        await _saveHwidConsents(store, consents);
+      if (store == null) {
+        if (url == null) return;
+        throw StateError('Preferences are unavailable');
       }
+      final policy = _readHwidPolicy(store);
+      final consents = _hwidConsents(policy);
+      if (url != null) {
+        consents['$id'] = _urlDigest(url);
+      } else if (consents.remove('$id') == null) {
+        return;
+      }
+      await _saveHwidPolicy(store, {...policy, 'profiles': consents});
     });
   }
 
-  Future<T> _withHwidStore<T>(
-    Future<T> Function(SharedPreferences?) use,
-  ) async {
-    final previous = _hwidWrite;
-    final done = _hwidWrite = Completer<void>();
-    try {
-      await previous?.future;
-      return await use(await _store.value);
-    } finally {
-      if (identical(_hwidWrite, done)) _hwidWrite = null;
-      done.complete();
-    }
-  }
+  Future<T> _withHwidStore<T>(Future<T> Function(SharedPreferences?) use) =>
+      _hwidQueue.run(() async => use(await _store.value));
 
-  Map<String, String> _hwidConsents(SharedPreferences store) {
+  Map<String, Object?> _readHwidPolicy(SharedPreferences store) {
     final saved = store.getString(_hwidConsentKey);
     if (saved == null) return {};
-    try {
-      final policy = json.decode(saved) as Map<String, dynamic>;
-      return Map<String, String>.from(policy['profiles'] as Map);
-    } on FormatException {
-      return {};
-    } on TypeError {
-      return {};
-    }
-  }
-
-  Future<void> _saveHwidConsents(
-    SharedPreferences store,
-    Map<String, String> consents,
-  ) {
-    return _saveHwidValue(
-      store,
-      _hwidConsentKey,
-      json.encode({'profiles': consents}),
+    return decodeOrRestoreDefault(
+      'subscription HWID preferences',
+      () => json.decode(saved) as Map<String, Object?>,
+      () => <String, Object?>{},
     );
   }
+
+  Map<String, Object?> _hwidConsents(Map<String, Object?> policy) {
+    final consents = policy['profiles'];
+    return consents is Map<String, Object?> ? consents : {};
+  }
+
+  Future<void> _saveHwidPolicy(
+    SharedPreferences store,
+    Map<String, Object?> policy,
+  ) => _saveHwidValue(store, _hwidConsentKey, json.encode(policy));
 
   String _urlDigest(String url) => sha256.convert(utf8.encode(url)).toString();
 

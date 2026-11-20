@@ -49,7 +49,6 @@ class Dialogs {
     String? cancelText,
     bool? dismissible,
     bool destructive = false,
-    bool cancelLast = false,
   }) {
     return _showMessage(
       message: message,
@@ -60,7 +59,6 @@ class Dialogs {
       dismissible: dismissible,
       destructive: destructive,
       cancelable: true,
-      cancelLast: cancelLast,
     );
   }
 
@@ -96,7 +94,6 @@ class Dialogs {
     String? cancelText,
     bool? dismissible,
     bool destructive = false,
-    bool cancelLast = false,
   }) async {
     return showCommonDialog<bool>(
       context: context,
@@ -104,22 +101,23 @@ class Dialogs {
       child: Builder(
         builder: (context) {
           final appLocalizations = context.appLocalizations;
-          final cancel = TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(cancelText ?? appLocalizations.cancel),
-          );
           return AlertDialog(
             title: title ?? appLocalizations.tip,
             destructive: destructive,
             actions: [
-              if (cancelable && !cancelLast) cancel,
+              if (cancelable)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                  child: Text(cancelText ?? appLocalizations.cancel),
+                ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(true);
                 },
                 child: Text(confirmText ?? appLocalizations.confirm),
               ),
-              if (cancelable && cancelLast) cancel,
             ],
             child: SelectableText.rich(
               TextSpan(children: [message]),

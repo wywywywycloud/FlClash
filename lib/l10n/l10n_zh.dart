@@ -324,9 +324,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get hwidSharing => '共享 HWID';
-
-  @override
   String subscriptionHwidRequest(String host) {
     return '来自 $host 的订阅请求获取此设备的标识符（HWID）。是否允许共享？';
   }

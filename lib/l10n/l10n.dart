@@ -732,12 +732,6 @@ abstract class AppLocalizations {
   /// **'Do you want to create a profile from {url}?'**
   String createProfileFromUrlTip(Object url);
 
-  /// No description provided for @hwidSharing.
-  ///
-  /// In en, this message translates to:
-  /// **'HWID sharing'**
-  String get hwidSharing;
-
   /// No description provided for @subscriptionHwidRequest.
   ///
   /// In en, this message translates to:
