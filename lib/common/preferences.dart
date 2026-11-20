@@ -144,12 +144,8 @@ class Preferences {
     Profile profile, {
     bool allowedForImport = false,
   }) async {
-    final uri = profile.url.webUri;
-    if (profile.type != ProfileType.url ||
-        uri == null ||
-        uri.scheme != 'https') {
-      return null;
-    }
+    final uri = profile.hwidSubscriptionUri;
+    if (uri == null) return null;
     return _withHwidStore((store) async {
       if (store == null) return null;
       final policy = _readHwidPolicy(store);

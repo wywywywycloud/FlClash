@@ -78,9 +78,15 @@ class ProfilesAction extends _$ProfilesAction {
     }
   }
 
-  void putProfile(Profile profile) {
+  bool _hwidSubscriptionChanged(Profile profile) {
     final previous = ref.read(profilesProvider).getProfile(profile.id);
-    if (previous != null && previous.url != profile.url) {
+    return previous != null &&
+        previous.url != profile.url &&
+        previous.hwidSubscriptionUri != null;
+  }
+
+  void putProfile(Profile profile) {
+    if (_hwidSubscriptionChanged(profile)) {
       unawaited(
         globalState.safeRun(
           () => preferences.forgetSubscriptionHwid(profile.id),
@@ -170,8 +176,7 @@ class ProfilesAction extends _$ProfilesAction {
         ? ref.read(updatingKeysProvider.notifier).start(profile.updatingKey)
         : null;
     try {
-      final previous = ref.read(profilesProvider).getProfile(profile.id);
-      if (previous != null && previous.url != profile.url) {
+      if (_hwidSubscriptionChanged(profile)) {
         await preferences.forgetSubscriptionHwid(profile.id);
       }
       ref.read(profilesProvider.notifier).put(profile);

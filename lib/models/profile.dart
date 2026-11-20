@@ -138,6 +138,12 @@ extension ProfilesExt on List<Profile> {
 extension ProfileExtension on Profile {
   bool get realAutoUpdate => type == ProfileType.url && autoUpdate;
 
+  Uri? get hwidSubscriptionUri {
+    if (type != ProfileType.url) return null;
+    final uri = url.webUri;
+    return uri?.scheme == 'https' ? uri : null;
+  }
+
   String get realLabel => label.takeFirstValid([defaultLabel]);
 
   String get defaultLabel => url.webUri?.host ?? id.toString();
