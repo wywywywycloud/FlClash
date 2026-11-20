@@ -326,6 +326,14 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get hwidSharing => 'HWID の共有';
+
+  @override
+  String subscriptionHwidRequest(String host) {
+    return '$host のサブスクリプションがデバイス識別子 (HWID) を要求しています。共有を許可しますか？';
+  }
+
+  @override
   String get create => '作成';
 
   @override

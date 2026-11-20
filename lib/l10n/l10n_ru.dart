@@ -335,6 +335,14 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get hwidSharing => 'Отправка HWID';
+
+  @override
+  String subscriptionHwidRequest(String host) {
+    return 'Подписка с $host запрашивает идентификатор устройства (HWID). Разрешить отправку?';
+  }
+
+  @override
   String get create => 'Создать';
 
   @override

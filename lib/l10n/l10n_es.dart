@@ -337,6 +337,14 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get hwidSharing => 'Envío del HWID';
+
+  @override
+  String subscriptionHwidRequest(String host) {
+    return 'La suscripción de $host solicita el identificador del dispositivo (HWID). ¿Permitir su envío?';
+  }
+
+  @override
   String get create => 'Crear';
 
   @override

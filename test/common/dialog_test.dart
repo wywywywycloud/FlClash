@@ -106,6 +106,28 @@ Future<void> _pumpBannerHost(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('showMessage can place the negative action on the right', (
+    tester,
+  ) async {
+    await _pumpHost(tester);
+
+    final result = dialogs.showMessage(
+      message: const TextSpan(text: 'body'),
+      confirmText: 'Yes',
+      cancelText: 'No',
+      cancelLast: true,
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getCenter(find.text('No')).dx,
+      greaterThan(tester.getCenter(find.text('Yes')).dx),
+    );
+    await tester.tap(find.text('No'));
+    await tester.pumpAndSettle();
+    expect(await result, isFalse);
+  });
+
   testWidgets('showMessage resolves true when confirmed', (tester) async {
     await _pumpHost(tester);
 

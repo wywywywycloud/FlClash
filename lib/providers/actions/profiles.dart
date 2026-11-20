@@ -40,6 +40,7 @@ class ProfilesAction extends _$ProfilesAction {
   Future<void> deleteProfile(int id) async {
     await ref.read(profilesProvider.notifier).del(id);
     await clearEffect(id);
+    await preferences.forgetSubscriptionHwid(id);
     final currentProfileId = ref.read(currentProfileIdProvider);
     if (currentProfileId == id) {
       final profiles = ref.read(profilesProvider);
@@ -78,6 +79,14 @@ class ProfilesAction extends _$ProfilesAction {
   }
 
   void putProfile(Profile profile) {
+    final previous = ref.read(profilesProvider).getProfile(profile.id);
+    if (previous != null && previous.url != profile.url) {
+      unawaited(
+        globalState.safeRun(
+          () => preferences.forgetSubscriptionHwid(profile.id),
+        ),
+      );
+    }
     ref.read(profilesProvider.notifier).put(profile);
     if (ref.read(currentProfileIdProvider) != null) return;
     ref.read(currentProfileIdProvider.notifier).value = profile.id;
@@ -161,6 +170,10 @@ class ProfilesAction extends _$ProfilesAction {
         ? ref.read(updatingKeysProvider.notifier).start(profile.updatingKey)
         : null;
     try {
+      final previous = ref.read(profilesProvider).getProfile(profile.id);
+      if (previous != null && previous.url != profile.url) {
+        await preferences.forgetSubscriptionHwid(profile.id);
+      }
       ref.read(profilesProvider.notifier).put(profile);
       final updated = await profile.update(
         validate: (path, key) => _core.validateProfile(path, key),
@@ -371,8 +384,10 @@ class ProfilesAction extends _$ProfilesAction {
     String link, {
     String? label,
     String ageSecretKey = '',
+    Future<bool?> Function()? confirmHwid,
   }) async {
     _showProfiles();
+    var approvedBeforeDownload = false;
     final profile = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () => link.isShareLink
@@ -382,13 +397,46 @@ class ProfilesAction extends _$ProfilesAction {
                 label: label,
                 url: link,
               ).copyWith(ageSecretKey: ageSecretKey),
-              _download,
+              (profile) async {
+                try {
+                  return await _download(
+                    profile,
+                    allowHwidForImport: approvedBeforeDownload,
+                  );
+                } on DioException catch (error) {
+                  if (approvedBeforeDownload ||
+                      confirmHwid == null ||
+                      error.response?.statusCode != HttpStatus.notFound ||
+                      await confirmHwid() != true) {
+                    rethrow;
+                  }
+                  approvedBeforeDownload = true;
+                  return _download(profile, allowHwidForImport: true);
+                }
+              },
             ),
       title: currentAppLocalizations.addProfile,
     );
-    if (profile != null) {
-      putProfile(profile);
+    if (profile == null) return;
+    putProfile(profile);
+    if (confirmHwid == null ||
+        !approvedBeforeDownload && await confirmHwid() != true) {
+      return;
     }
+    await globalState.safeRun(
+      () async {
+        final current = ref.read(profilesProvider).getProfile(profile.id);
+        if (current == null || current.url != profile.url) return;
+        await preferences.allowSubscriptionHwid(current);
+        if (approvedBeforeDownload) return;
+        final latest = ref.read(profilesProvider).getProfile(profile.id);
+        if (latest != null && latest.url == profile.url) {
+          await updateProfile(latest, showLoading: true);
+        }
+      },
+      title: currentAppLocalizations.hwidSharing,
+      silence: false,
+    );
   }
 
   /// Ids are taken up front so the list keeps the order of [links]; the share
@@ -418,9 +466,13 @@ class ProfilesAction extends _$ProfilesAction {
     );
   }
 
-  Future<Profile> _download(Profile profile) {
+  Future<Profile> _download(
+    Profile profile, {
+    bool allowHwidForImport = false,
+  }) {
     return profile.update(
       validate: (path, key) => _core.validateProfile(path, key),
+      allowHwidForImport: allowHwidForImport,
     );
   }
 

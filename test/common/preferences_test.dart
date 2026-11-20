@@ -28,6 +28,33 @@ void main() {
     store = await SharedPreferences.getInstance();
   });
 
+  test(
+    'the persisted HWID permission belongs to the profile and URL',
+    () async {
+      final profile = Profile.normal(url: 'https://subscriptions.example/one');
+      final another = Profile.normal(url: profile.url);
+      final edited = profile.copyWith(url: 'https://subscriptions.example/two');
+      expect(await preferences.subscriptionHwid(profile), isNull);
+
+      await preferences.allowSubscriptionHwid(profile);
+      final hwid = await preferences.subscriptionHwid(profile);
+      expect(hwid, matches(r'^[a-f0-9]{64}$'));
+      expect(await preferences.subscriptionHwid(another), isNull);
+      expect(await preferences.subscriptionHwid(edited), isNull);
+
+      await preferences.rebind();
+      expect(await preferences.subscriptionHwid(profile), hwid);
+      await preferences.forgetSubscriptionHwid(profile.id);
+      expect(await preferences.subscriptionHwid(profile), isNull);
+
+      await preferences.allowSubscriptionHwid(another);
+      expect(await preferences.subscriptionHwid(another), hwid);
+      final otherOrigin = Profile.normal(url: 'https://other.example/one');
+      await preferences.allowSubscriptionHwid(otherOrigin);
+      expect(await preferences.subscriptionHwid(otherOrigin), isNot(hwid));
+    },
+  );
+
   group('applied config md5', () {
     test('round-trips a written md5 and forgets a cleared one', () async {
       expect(await preferences.getAppliedConfigMd5(), isNull);

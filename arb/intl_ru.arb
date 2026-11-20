@@ -103,6 +103,8 @@
   "qrcodeTooLongTip": "Ссылка слишком длинная для QR-кода. Используйте «Копировать ссылку».",
   "submit": "Отправить",
   "createProfileFromUrlTip": "Создать профиль по ссылке {url}?",
+  "hwidSharing": "Отправка HWID",
+  "subscriptionHwidRequest": "Подписка с {host} запрашивает идентификатор устройства (HWID). Разрешить отправку?",
   "create": "Создать",
   "pleaseUploadValidQrcode": "Загрузите корректный QR-код",
   "blacklistMode": "Режим чёрного списка",
