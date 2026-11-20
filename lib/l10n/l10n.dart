@@ -735,7 +735,7 @@ abstract class AppLocalizations {
   /// No description provided for @subscriptionHwidRequest.
   ///
   /// In en, this message translates to:
-  /// **'The subscription from {host} requests your device identifier (HWID). Allow sharing it?'**
+  /// **'Allow sending {host} a random identifier (HWID) unique to this subscription?'**
   String subscriptionHwidRequest(String host);
 
   /// No description provided for @create.

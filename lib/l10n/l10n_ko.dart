@@ -326,7 +326,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String subscriptionHwidRequest(String host) {
-    return '$host의 구독이 기기 식별자(HWID)를 요청합니다. 공유하시겠습니까?';
+    return '이 구독 전용으로 생성한 무작위 식별자(HWID)를 $host에 보내도록 허용할까요?';
   }
 
   @override

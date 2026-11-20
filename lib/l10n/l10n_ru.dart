@@ -336,7 +336,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String subscriptionHwidRequest(String host) {
-    return 'Подписка с $host запрашивает идентификатор устройства (HWID). Разрешить отправку?';
+    return 'Разрешить отправлять на $host случайный идентификатор (HWID), созданный только для этой подписки?';
   }
 
   @override

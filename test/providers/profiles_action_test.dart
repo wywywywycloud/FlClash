@@ -115,6 +115,35 @@ void main() {
       return adapter;
     }
 
+    test('reimporting the same URL gets a new HWID', () async {
+      final adapter = useSubscription(requiresHwid: true);
+      final action = container.read(profilesActionProvider.notifier);
+      Future<void> add() =>
+          action.addProfileFromLink(url, confirmHwid: () async => true);
+      await add();
+      final first = container.read(profilesProvider).single;
+      final firstHwid = adapter.hwids.last;
+      await add();
+      final second = container.read(profilesProvider).last;
+      final secondHwid = adapter.hwids.last;
+      await action.deleteProfile(first.id);
+      await add();
+      final thirdHwid = adapter.hwids.last;
+      await preferences.rebind();
+      await second.update(validate: (_, _) async => null);
+      expect(adapter.hwids, [
+        null,
+        firstHwid,
+        null,
+        secondHwid,
+        null,
+        thirdHwid,
+        secondHwid,
+      ]);
+      expect({firstHwid, secondHwid, thirdHwid}, hasLength(3));
+      expect([firstHwid, secondHwid, thirdHwid], everyElement(isNotNull));
+    });
+
     for (final requiresHwid in [false, true]) {
       test('allows HWID after consent (required: $requiresHwid)', () async {
         final adapter = useSubscription(requiresHwid: requiresHwid);

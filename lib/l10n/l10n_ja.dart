@@ -327,7 +327,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String subscriptionHwidRequest(String host) {
-    return '$host のサブスクリプションがデバイス識別子 (HWID) を要求しています。共有を許可しますか？';
+    return 'このサブスクリプション専用のランダムな識別子（HWID）を $host に送信することを許可しますか？';
   }
 
   @override

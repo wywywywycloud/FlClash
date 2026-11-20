@@ -103,7 +103,7 @@
   "qrcodeTooLongTip": "このリンクは長すぎて QR コードにできません。「リンクをコピー」を使ってください。",
   "submit": "送信",
   "createProfileFromUrlTip": "{url} からプロファイルを作成しますか？",
-  "subscriptionHwidRequest": "{host} のサブスクリプションがデバイス識別子 (HWID) を要求しています。共有を許可しますか？",
+  "subscriptionHwidRequest": "このサブスクリプション専用のランダムな識別子（HWID）を {host} に送信することを許可しますか？",
   "create": "作成",
   "pleaseUploadValidQrcode": "有効なQRコードをアップロードしてください",
   "blacklistMode": "ブラックリストモード",

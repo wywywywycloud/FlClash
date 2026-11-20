@@ -338,7 +338,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String subscriptionHwidRequest(String host) {
-    return 'La suscripción de $host solicita el identificador del dispositivo (HWID). ¿Permitir su envío?';
+    return '¿Permitir que se envíe a $host un identificador aleatorio (HWID) exclusivo de esta suscripción?';
   }
 
   @override

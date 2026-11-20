@@ -103,7 +103,7 @@
   "qrcodeTooLongTip": "链接过长，无法生成二维码，请改用“复制链接”。",
   "submit": "提交",
   "createProfileFromUrlTip": "是否要通过 {url} 创建配置？",
-  "subscriptionHwidRequest": "来自 {host} 的订阅请求获取此设备的标识符（HWID）。是否允许共享？",
+  "subscriptionHwidRequest": "是否允许向 {host} 发送此订阅专属的随机标识符（HWID）？",
   "create": "创建",
   "pleaseUploadValidQrcode": "请上传有效的二维码",
   "blacklistMode": "黑名单模式",

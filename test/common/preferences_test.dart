@@ -44,11 +44,20 @@ void main() {
 
       await preferences.rebind();
       expect(await preferences.subscriptionHwid(profile), hwid);
-      await preferences.forgetSubscriptionHwid(profile.id);
+      await preferences.revokeSubscriptionHwid(profile.id);
       expect(await preferences.subscriptionHwid(profile), isNull);
+      await preferences.allowSubscriptionHwid(profile);
+      expect(await preferences.subscriptionHwid(profile), hwid);
 
       await preferences.allowSubscriptionHwid(another);
-      expect(await preferences.subscriptionHwid(another), hwid);
+      final otherHwid = await preferences.subscriptionHwid(another);
+      expect(otherHwid, matches(r'^[a-f0-9]{64}$'));
+      expect(otherHwid, isNot(hwid));
+      await preferences.forgetSubscriptionHwid(profile.id);
+      expect(await preferences.subscriptionHwid(profile), isNull);
+      await preferences.allowSubscriptionHwid(profile);
+      expect(await preferences.subscriptionHwid(profile), isNot(hwid));
+      expect(await preferences.subscriptionHwid(another), otherHwid);
       final otherOrigin = Profile.normal(url: 'https://other.example/one');
       await preferences.allowSubscriptionHwid(otherOrigin);
       expect(await preferences.subscriptionHwid(otherOrigin), isNot(hwid));

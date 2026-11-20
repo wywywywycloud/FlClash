@@ -103,7 +103,7 @@
   "qrcodeTooLongTip": "이 링크는 너무 길어 QR 코드로 만들 수 없습니다. 링크 복사를 사용하세요.",
   "submit": "제출",
   "createProfileFromUrlTip": "{url}에서 프로필을 만드시겠습니까?",
-  "subscriptionHwidRequest": "{host}의 구독이 기기 식별자(HWID)를 요청합니다. 공유하시겠습니까?",
+  "subscriptionHwidRequest": "이 구독 전용으로 생성한 무작위 식별자(HWID)를 {host}에 보내도록 허용할까요?",
   "create": "만들기",
   "pleaseUploadValidQrcode": "올바른 QR 코드를 업로드하세요",
   "blacklistMode": "블랙리스트 모드",
