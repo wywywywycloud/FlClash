@@ -337,34 +337,18 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get hwidSharing => 'Envío del HWID';
-
-  @override
   String subscriptionHwidRequest(String host) {
     return 'La suscripción de $host solicita el identificador del dispositivo (HWID). ¿Permitir su envío?';
   }
 
   @override
-  String get globalHwid => 'Compartir el HWID con todas las suscripciones';
-
-  @override
-  String get globalHwidDescription =>
-      'Envía un identificador del dispositivo al descargar cualquier suscripción HTTPS actual o futura.';
-
-  @override
-  String get disableGlobalHwidTitle =>
-      '¿Desactivar el envío del HWID para las suscripciones actuales?';
+  String get globalHwid =>
+      'Compartir el HWID con todas las suscripciones HTTPS';
 
   @override
   String disableGlobalHwidMessage(int count) {
-    return 'El envío del HWID está activado para $count suscripciones. Si lo desactivas, algunas podrían dejar de actualizarse. Si lo mantienes, sus servidores seguirán recibiendo el identificador del dispositivo.';
+    return '¿Desactivar también el envío del HWID para las suscripciones actuales? Está activado para $count. Si lo desactivas, podrían dejar de actualizarse. Si lo mantienes, sus servidores seguirán recibiendo el identificador del dispositivo.';
   }
-
-  @override
-  String get disableGlobalHwidYes => 'Sí, desactivar';
-
-  @override
-  String get disableGlobalHwidNo => 'No, mantener';
 
   @override
   String get create => 'Crear';

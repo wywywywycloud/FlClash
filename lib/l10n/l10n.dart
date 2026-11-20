@@ -732,12 +732,6 @@ abstract class AppLocalizations {
   /// **'Do you want to create a profile from {url}?'**
   String createProfileFromUrlTip(Object url);
 
-  /// No description provided for @hwidSharing.
-  ///
-  /// In en, this message translates to:
-  /// **'HWID sharing'**
-  String get hwidSharing;
-
   /// No description provided for @subscriptionHwidRequest.
   ///
   /// In en, this message translates to:
@@ -747,38 +741,14 @@ abstract class AppLocalizations {
   /// No description provided for @globalHwid.
   ///
   /// In en, this message translates to:
-  /// **'Share HWID with all subscriptions'**
+  /// **'Share HWID with all HTTPS subscriptions'**
   String get globalHwid;
-
-  /// No description provided for @globalHwidDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Send a device identifier when downloading any current or future HTTPS subscription.'**
-  String get globalHwidDescription;
-
-  /// No description provided for @disableGlobalHwidTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Turn off HWID sharing for current subscriptions?'**
-  String get disableGlobalHwidTitle;
 
   /// No description provided for @disableGlobalHwidMessage.
   ///
   /// In en, this message translates to:
-  /// **'HWID sharing is enabled for {count} subscriptions. Turning it off may stop some subscriptions from updating. Keeping it enabled lets their servers continue to receive the device identifier.'**
+  /// **'Turn off HWID sharing for current subscriptions? Sharing is enabled for {count}. Turning it off may prevent updates. Keeping it enabled lets those servers continue to receive the device identifier.'**
   String disableGlobalHwidMessage(int count);
-
-  /// No description provided for @disableGlobalHwidYes.
-  ///
-  /// In en, this message translates to:
-  /// **'Yes, turn off'**
-  String get disableGlobalHwidYes;
-
-  /// No description provided for @disableGlobalHwidNo.
-  ///
-  /// In en, this message translates to:
-  /// **'No, keep sharing'**
-  String get disableGlobalHwidNo;
 
   /// No description provided for @create.
   ///

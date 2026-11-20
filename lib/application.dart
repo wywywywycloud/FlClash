@@ -120,15 +120,14 @@ class ApplicationState extends ConsumerState<Application> {
     });
   }
 
-  Future<bool?> _confirmSubscriptionHwid(String host) {
+  Future<bool> _confirmSubscriptionHwid(String host) async {
     final l10n = currentAppLocalizations;
-    return dialogs.showMessage(
-      title: l10n.hwidSharing,
+    final decline = await dialogs.showMessage(
       message: TextSpan(text: l10n.subscriptionHwidRequest(host)),
-      confirmText: l10n.yes,
-      cancelText: l10n.no,
-      cancelLast: true,
+      cancelText: l10n.yes,
+      confirmText: l10n.no,
     );
+    return decline == false;
   }
 
   void _autoUpdateProfilesTask() {

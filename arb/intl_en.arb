@@ -103,14 +103,9 @@
   "qrcodeTooLongTip": "This link is too long for a QR code. Use Copy link instead.",
   "submit": "Submit",
   "createProfileFromUrlTip": "Do you want to create a profile from {url}?",
-  "hwidSharing": "HWID sharing",
   "subscriptionHwidRequest": "The subscription from {host} requests your device identifier (HWID). Allow sharing it?",
-  "globalHwid": "Share HWID with all subscriptions",
-  "globalHwidDescription": "Send a device identifier when downloading any current or future HTTPS subscription.",
-  "disableGlobalHwidTitle": "Turn off HWID sharing for current subscriptions?",
-  "disableGlobalHwidMessage": "HWID sharing is enabled for {count} subscriptions. Turning it off may stop some subscriptions from updating. Keeping it enabled lets their servers continue to receive the device identifier.",
-  "disableGlobalHwidYes": "Yes, turn off",
-  "disableGlobalHwidNo": "No, keep sharing",
+  "globalHwid": "Share HWID with all HTTPS subscriptions",
+  "disableGlobalHwidMessage": "Turn off HWID sharing for current subscriptions? Sharing is enabled for {count}. Turning it off may prevent updates. Keeping it enabled lets those servers continue to receive the device identifier.",
   "@disableGlobalHwidMessage": {
     "placeholders": {
       "count": { "type": "int" }

@@ -77,23 +77,21 @@ class _GlobalHwidItemState extends ConsumerState<_GlobalHwidItem> {
       final count = enabled ? 0 : _subscriptions.length;
       var keepSharing = false;
       if (count > 0) {
-        final choice = await dialogs.showMessage(
+        final keep = await dialogs.showMessage(
           context: context,
-          title: l10n.disableGlobalHwidTitle,
           message: TextSpan(text: l10n.disableGlobalHwidMessage(count)),
-          confirmText: l10n.disableGlobalHwidYes,
-          cancelText: l10n.disableGlobalHwidNo,
-          cancelLast: true,
+          cancelText: l10n.yes,
+          confirmText: l10n.no,
         );
-        if (!mounted || choice == null) return;
-        keepSharing = !choice;
+        if (!mounted || keep == null) return;
+        keepSharing = keep;
       }
       await globalState.safeRun(
         () => preferences.setGlobalSubscriptionHwid(
           enabled: enabled,
           keepSharing: keepSharing ? _subscriptions : const [],
         ),
-        title: l10n.hwidSharing,
+        title: l10n.globalHwid,
         silence: false,
       );
       if (mounted) ref.invalidate(_globalHwidProvider);
@@ -107,7 +105,6 @@ class _GlobalHwidItemState extends ConsumerState<_GlobalHwidItem> {
     final ready = ref.watch(_globalHwidProvider).hasValue;
     return ConfigToggleItem(
       title: (l) => l.globalHwid,
-      subtitle: (l) => l.globalHwidDescription,
       selector: _globalHwidProvider.select((state) => state.value ?? false),
       onChanged: (_, enabled) => _setEnabled(enabled),
       enabled: ready && !_changing,

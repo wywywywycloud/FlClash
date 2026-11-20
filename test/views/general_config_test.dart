@@ -71,10 +71,9 @@ void main() {
 
       await tester.tap(find.text(l.globalHwid));
       await tester.pumpAndSettle();
-      expect(find.text(l.disableGlobalHwidTitle), findsOneWidget);
       expect(find.text(l.disableGlobalHwidMessage(2)), findsOneWidget);
-      final yes = find.text(l.disableGlobalHwidYes);
-      final no = find.text(l.disableGlobalHwidNo);
+      final yes = find.text(l.yes);
+      final no = find.text(l.no);
       expect(tester.getCenter(no).dx, greaterThan(tester.getCenter(yes).dx));
       if (choice == null) {
         Navigator.of(tester.element(yes)).pop();
@@ -106,7 +105,7 @@ void main() {
       await tester.tap(find.text(l.globalHwid));
       await tester.pumpAndSettle();
 
-      expect(find.text(l.disableGlobalHwidTitle), findsNothing);
+      expect(find.byType(AlertDialog), findsNothing);
       expect(await preferences.globalSubscriptionHwidEnabled, isFalse);
     },
   );

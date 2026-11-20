@@ -105,14 +105,19 @@ void main() {
   group('HWID on subscription import', () {
     const url = 'https://subscriptions.example/sub';
 
-    test('global HWID applies on the first request without asking', () async {
-      await mockPreferences();
-      await preferences.setGlobalSubscriptionHwid(enabled: true);
-      final adapter = _SubscriptionAdapter(requiresHwid: true);
+    setUp(() => mockPreferences());
+
+    _SubscriptionAdapter useSubscription({bool requiresHwid = false}) {
+      final adapter = _SubscriptionAdapter(requiresHwid: requiresHwid);
       final original = request.subscriptionDio.httpClientAdapter;
       request.subscriptionDio.httpClientAdapter = adapter;
       addTearDown(() => request.subscriptionDio.httpClientAdapter = original);
+      return adapter;
+    }
 
+    test('global HWID sends on the first request without asking', () async {
+      await preferences.setGlobalSubscriptionHwid(enabled: true);
+      final adapter = useSubscription(requiresHwid: true);
       final action = container.read(profilesActionProvider.notifier);
       await action.addProfileFromLink(
         url,
@@ -130,11 +135,7 @@ void main() {
 
     for (final requiresHwid in [false, true]) {
       test('allows HWID after consent (required: $requiresHwid)', () async {
-        await mockPreferences();
-        final adapter = _SubscriptionAdapter(requiresHwid: requiresHwid);
-        final original = request.subscriptionDio.httpClientAdapter;
-        request.subscriptionDio.httpClientAdapter = adapter;
-        addTearDown(() => request.subscriptionDio.httpClientAdapter = original);
+        final adapter = useSubscription(requiresHwid: requiresHwid);
 
         await container
             .read(profilesActionProvider.notifier)
@@ -160,11 +161,7 @@ void main() {
     }
 
     test('keeps the imported profile when HWID sharing is declined', () async {
-      await mockPreferences();
-      final adapter = _SubscriptionAdapter(requiresHwid: false);
-      final original = request.subscriptionDio.httpClientAdapter;
-      request.subscriptionDio.httpClientAdapter = adapter;
-      addTearDown(() => request.subscriptionDio.httpClientAdapter = original);
+      final adapter = useSubscription();
 
       await container
           .read(profilesActionProvider.notifier)

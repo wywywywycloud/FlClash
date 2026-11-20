@@ -438,7 +438,7 @@ class ProfilesAction extends _$ProfilesAction {
           await updateProfile(latest, showLoading: true);
         }
       },
-      title: currentAppLocalizations.hwidSharing,
+      title: currentAppLocalizations.addProfile,
       silence: false,
     );
   }
