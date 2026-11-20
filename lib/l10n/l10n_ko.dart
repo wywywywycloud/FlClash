@@ -325,6 +325,11 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String subscriptionHwidRequest(String host) {
+    return '이 구독 전용으로 생성한 무작위 식별자(HWID)를 $host에 보내도록 허용할까요?';
+  }
+
+  @override
   String get create => '만들기';
 
   @override

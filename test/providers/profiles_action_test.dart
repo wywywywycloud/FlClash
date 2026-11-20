@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/interface.dart';
@@ -17,10 +19,33 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yaml/yaml.dart';
 
 import '../helpers/app_paths.dart';
+import '../helpers/preferences.dart';
 import '../helpers/test_app.dart';
 import '../helpers/test_profiles.dart';
 
 class _MockCoreHandlerInterface extends Mock implements CoreHandlerInterface {}
+
+class _SubscriptionAdapter implements HttpClientAdapter {
+  _SubscriptionAdapter({required this.requiresHwid});
+
+  final bool requiresHwid;
+  final hwids = <String?>[];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    final hwid = options.headers['X-HWID'] as String?;
+    hwids.add(hwid);
+    if (requiresHwid && hwid == null) return ResponseBody.fromString('', 404);
+    return ResponseBody.fromString('proxies: []\n', 200);
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +101,88 @@ void main() {
     final config = loadYaml(await (await profile.file).readAsString()) as Map;
     return [for (final proxy in config['proxies'] as List) proxy as Map];
   }
+
+  group('HWID on subscription import', () {
+    const url = 'https://subscriptions.example/sub';
+
+    setUp(() => mockPreferences());
+
+    _SubscriptionAdapter useSubscription({bool requiresHwid = false}) {
+      final adapter = _SubscriptionAdapter(requiresHwid: requiresHwid);
+      final original = request.subscriptionDio.httpClientAdapter;
+      request.subscriptionDio.httpClientAdapter = adapter;
+      addTearDown(() => request.subscriptionDio.httpClientAdapter = original);
+      return adapter;
+    }
+
+    test('reimporting the same URL gets a new HWID', () async {
+      final adapter = useSubscription(requiresHwid: true);
+      final action = container.read(profilesActionProvider.notifier);
+      Future<void> add() =>
+          action.addProfileFromLink(url, confirmHwid: () async => true);
+      await add();
+      final first = container.read(profilesProvider).single;
+      final firstHwid = adapter.hwids.last;
+      await add();
+      final second = container.read(profilesProvider).last;
+      final secondHwid = adapter.hwids.last;
+      await action.deleteProfile(first.id);
+      await add();
+      final thirdHwid = adapter.hwids.last;
+      await preferences.rebind();
+      await second.update(validate: (_, _) async => null);
+      expect(adapter.hwids, [
+        null,
+        firstHwid,
+        null,
+        secondHwid,
+        null,
+        thirdHwid,
+        secondHwid,
+      ]);
+      expect({firstHwid, secondHwid, thirdHwid}, hasLength(3));
+      expect([firstHwid, secondHwid, thirdHwid], everyElement(isNotNull));
+    });
+
+    for (final requiresHwid in [false, true]) {
+      test('allows HWID after consent (required: $requiresHwid)', () async {
+        final adapter = useSubscription(requiresHwid: requiresHwid);
+
+        await container
+            .read(profilesActionProvider.notifier)
+            .addProfileFromLink(
+              url,
+              confirmHwid: () async {
+                expect(adapter.hwids, [null]);
+                expect(
+                  container.read(profilesProvider),
+                  hasLength(requiresHwid ? 0 : 1),
+                );
+                return true;
+              },
+            );
+
+        final profile = container.read(profilesProvider).single;
+        final hwid = await preferences.subscriptionHwid(profile);
+        expect(hwid, isNotNull);
+        expect(adapter.hwids, [null, hwid]);
+        await profile.update(validate: (_, _) async => null);
+        expect(adapter.hwids.last, hwid);
+      });
+    }
+
+    test('keeps the imported profile when HWID sharing is declined', () async {
+      final adapter = useSubscription();
+
+      await container
+          .read(profilesActionProvider.notifier)
+          .addProfileFromLink(url, confirmHwid: () async => false);
+
+      final profile = container.read(profilesProvider).single;
+      await profile.update(validate: (_, _) async => null);
+      expect(adapter.hwids, [null, null]);
+    });
+  });
 
   group('addProfileFromLink with a share link', () {
     test('saves a file profile named after the proxy it holds', () async {

@@ -83,7 +83,7 @@ class LinkManager {
       Platform.isAndroid ? androidLinks() : desktopLinks();
 
   Future<void> initAppLinksListen(
-    Function(String url) installConfigCallBack,
+    void Function(({String url, bool requestsHwid}) link) installConfigCallBack,
   ) async {
     destroy();
     subscription = uriLinkStream().listen((uri) {
@@ -91,14 +91,22 @@ class LinkManager {
     });
   }
 
-  void _handle(Uri uri, Function(String url) installConfigCallBack) {
+  void _handle(
+    Uri uri,
+    void Function(({String url, bool requestsHwid}) link) installConfigCallBack,
+  ) {
     if (!protocolSchemes.contains(uri.scheme)) {
       return;
     }
     commonPrint.log('onAppLink: $uri');
     final url = _installConfigUrl(uri);
     if (url != null) {
-      installConfigCallBack(url);
+      final flags = uri.queryParametersAll['xhwid'];
+      installConfigCallBack((
+        url: url,
+        requestsHwid:
+            listEquals(flags, const ['true']) && url.webUri?.scheme == 'https',
+      ));
     }
   }
 

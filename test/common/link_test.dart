@@ -8,7 +8,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late StreamController<Uri> links;
-  late List<String> received;
+  late List<({String url, bool requestsHwid})> received;
 
   setUp(() {
     links = StreamController<Uri>.broadcast();
@@ -39,7 +39,25 @@ void main() {
 
     await emit('flclash://install-config?url=https://example.com/a.yaml');
 
-    expect(received, ['https://example.com/a.yaml']);
+    expect(received, [
+      (url: 'https://example.com/a.yaml', requestsHwid: false),
+    ]);
+  });
+
+  test('only an explicit external flag requests HWID for HTTPS', () async {
+    await listen();
+    const url = 'https://example.com/sub?token=one%26two&xhwid=true';
+    final encoded = Uri.encodeQueryComponent(url);
+    await emit('flclash://install-config?url=$encoded');
+    await emit('flclash://install-config?url=$encoded&xhwid=true');
+    await emit('flclash://install-config?url=$encoded&xhwid=true&xhwid=false');
+    await emit('flclash://install-config?url=http://example.com/&xhwid=true');
+    expect(received, [
+      (url: url, requestsHwid: false),
+      (url: url, requestsHwid: true),
+      (url: url, requestsHwid: false),
+      (url: 'http://example.com/', requestsHwid: false),
+    ]);
   });
 
   test('an install-config link without a url is ignored', () async {
@@ -77,7 +95,9 @@ void main() {
 
     await emit('flclash://install-config?url=https://example.com/a.yaml');
 
-    expect(received, ['https://example.com/a.yaml']);
+    expect(received, [
+      (url: 'https://example.com/a.yaml', requestsHwid: false),
+    ]);
   });
 
   test('a link with a scheme the app does not claim is ignored', () async {

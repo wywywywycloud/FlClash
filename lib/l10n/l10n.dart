@@ -732,6 +732,12 @@ abstract class AppLocalizations {
   /// **'Do you want to create a profile from {url}?'**
   String createProfileFromUrlTip(Object url);
 
+  /// No description provided for @subscriptionHwidRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow sending {host} a random identifier (HWID) unique to this subscription?'**
+  String subscriptionHwidRequest(String host);
+
   /// No description provided for @create.
   ///
   /// In en, this message translates to:

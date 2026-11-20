@@ -16,6 +16,9 @@ class Request {
   late final Dio dio;
   late final Dio _clashDio;
 
+  @visibleForTesting
+  Dio get subscriptionDio => _clashDio;
+
   /// Refuses an untrusted certificate even with the certificate check turned
   /// off, because what it fetches is installed, on Windows as administrator.
   @visibleForTesting
@@ -59,30 +62,70 @@ class Request {
     return FlClashHttpOverrides.findProxyForReader(read, uri);
   }
 
-  Future<Response<T>> _download<T>(String url, ResponseType responseType) {
+  Future<Response<T>> _download<T>(
+    String url,
+    ResponseType responseType, {
+    String? hwid,
+  }) {
     final target = downloadTarget(url);
     final cancelToken = CancelToken();
-    return _clashDio
-        .getUri<T>(
-          target.uri,
-          options: Options(responseType: responseType, headers: target.headers),
-          cancelToken: cancelToken,
-        )
-        .timeout(
-          downloadTimeoutDuration,
-          onTimeout: () {
-            cancelToken.cancel();
-            throw DioException.receiveTimeout(
-              timeout: downloadTimeoutDuration,
-              requestOptions: RequestOptions(path: url),
-            );
-          },
+    final shareHwid = hwid != null && target.uri.scheme == 'https';
+
+    Future<Response<T>> fetch() async {
+      var uri = target.uri;
+      var headers = {...target.headers, if (shareHwid) 'X-HWID': hwid};
+      const redirectCodes = {301, 302, 303, 307, 308};
+      for (var redirects = 0; ; redirects++) {
+        try {
+          return await _clashDio.getUri<T>(
+            uri,
+            options: Options(
+              responseType: responseType,
+              headers: headers,
+              followRedirects: !shareHwid,
+            ),
+            cancelToken: cancelToken,
+          );
+        } on DioException catch (error) {
+          if (!shareHwid ||
+              redirects >= 5 ||
+              !redirectCodes.contains(error.response?.statusCode)) {
+            rethrow;
+          }
+          final location = error.response!.headers.value(
+            HttpHeaders.locationHeader,
+          );
+          final relative = location == null ? null : Uri.tryParse(location);
+          final next = relative == null ? null : uri.resolveUri(relative);
+          if (next == null ||
+              next.host.isEmpty ||
+              next.scheme != 'http' && next.scheme != 'https') {
+            rethrow;
+          }
+          if (next.origin != uri.origin) headers = const {};
+          uri = next.replace(userInfo: '');
+        }
+      }
+    }
+
+    return fetch().timeout(
+      downloadTimeoutDuration,
+      onTimeout: () {
+        cancelToken.cancel();
+        throw DioException.receiveTimeout(
+          timeout: downloadTimeoutDuration,
+          requestOptions: RequestOptions(path: url),
         );
+      },
+    );
   }
 
-  Future<Response<Uint8List>> getFileResponseForUrl(String url) async {
+  Future<Response<Uint8List>> getFileResponseForUrl(
+    String url, {
+    String? hwid,
+  }) async {
     try {
-      return await _download<Uint8List>(url, ResponseType.bytes);
+      return await _download<Uint8List>(url, ResponseType.bytes, hwid: hwid);
     } catch (e) {
       commonPrint.log(
         'getFileResponseForUrl error ${compactError(e)}',

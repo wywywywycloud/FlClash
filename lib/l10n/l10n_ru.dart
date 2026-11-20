@@ -335,6 +335,11 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String subscriptionHwidRequest(String host) {
+    return 'Разрешить отправлять на $host случайный идентификатор (HWID), созданный только для этой подписки?';
+  }
+
+  @override
   String get create => 'Создать';
 
   @override

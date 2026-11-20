@@ -324,6 +324,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String subscriptionHwidRequest(String host) {
+    return '是否允许向 $host 发送此订阅专属的随机标识符（HWID）？';
+  }
+
+  @override
   String get create => '创建';
 
   @override

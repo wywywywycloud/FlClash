@@ -103,6 +103,12 @@
   "qrcodeTooLongTip": "This link is too long for a QR code. Use Copy link instead.",
   "submit": "Submit",
   "createProfileFromUrlTip": "Do you want to create a profile from {url}?",
+  "subscriptionHwidRequest": "Allow sending {host} a random identifier (HWID) unique to this subscription?",
+  "@subscriptionHwidRequest": {
+    "placeholders": {
+      "host": { "type": "String" }
+    }
+  },
   "create": "Create",
   "pleaseUploadValidQrcode": "Please upload a valid QR code",
   "blacklistMode": "Blacklist mode",

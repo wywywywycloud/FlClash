@@ -84,7 +84,8 @@ class ApplicationState extends ConsumerState<Application> {
   }
 
   void _initLink() {
-    linkManager.initAppLinksListen((url) async {
+    linkManager.initAppLinksListen((link) async {
+      final (:url, :requestsHwid) = link;
       unawaited(window?.show());
       final message = currentAppLocalizations.createProfileFromUrlTip(url);
       final parts = message.split(url);
@@ -105,11 +106,28 @@ class ApplicationState extends ConsumerState<Application> {
           ],
         ),
       );
-      if (res != true) return;
+      if (res != true || !mounted) return;
       unawaited(
-        ref.read(profilesActionProvider.notifier).addProfileFromLink(url),
+        ref
+            .read(profilesActionProvider.notifier)
+            .addProfileFromLink(
+              url,
+              confirmHwid: requestsHwid
+                  ? () => _confirmSubscriptionHwid(url.webUri!.host)
+                  : null,
+            ),
       );
     });
+  }
+
+  Future<bool> _confirmSubscriptionHwid(String host) async {
+    final l10n = currentAppLocalizations;
+    final decline = await dialogs.showMessage(
+      message: TextSpan(text: l10n.subscriptionHwidRequest(host)),
+      cancelText: l10n.yes,
+      confirmText: l10n.no,
+    );
+    return decline == false;
   }
 
   void _autoUpdateProfilesTask() {

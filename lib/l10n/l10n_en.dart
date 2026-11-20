@@ -333,6 +333,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String subscriptionHwidRequest(String host) {
+    return 'Allow sending $host a random identifier (HWID) unique to this subscription?';
+  }
+
+  @override
   String get create => 'Create';
 
   @override

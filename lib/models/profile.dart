@@ -138,6 +138,12 @@ extension ProfilesExt on List<Profile> {
 extension ProfileExtension on Profile {
   bool get realAutoUpdate => type == ProfileType.url && autoUpdate;
 
+  Uri? get hwidSubscriptionUri {
+    if (type != ProfileType.url) return null;
+    final uri = url.webUri;
+    return uri?.scheme == 'https' ? uri : null;
+  }
+
   String get realLabel => label.takeFirstValid([defaultLabel]);
 
   String get defaultLabel => url.webUri?.host ?? id.toString();
@@ -182,8 +188,15 @@ extension ProfileExtension on Profile {
     return _getFile();
   }
 
-  Future<Profile> update({required ValidateConfig validate}) async {
-    final response = await request.getFileResponseForUrl(url);
+  Future<Profile> update({
+    required ValidateConfig validate,
+    bool allowHwidForImport = false,
+  }) async {
+    final hwid = await preferences.subscriptionHwid(
+      this,
+      allowedForImport: allowHwidForImport,
+    );
+    final response = await request.getFileResponseForUrl(url, hwid: hwid);
     final disposition = response.headers.value('content-disposition');
     final userinfo = response.headers.value('subscription-userinfo');
     return copyWith(

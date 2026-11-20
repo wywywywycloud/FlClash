@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers/test_app.dart';
 import '../helpers/test_profiles.dart';
 import '../helpers/host_scaffold.dart';
+
 import 'package:prism_ui/prism_ui.dart';
 
 class _RecordingProfilesAction extends ProfilesAction {
@@ -25,6 +26,7 @@ class _RecordingProfilesAction extends ProfilesAction {
     String link, {
     String? label,
     String ageSecretKey = '',
+    Future<bool?> Function()? confirmHwid,
   }) async {
     singles.add(link);
     ageSecretKeys.add(ageSecretKey);

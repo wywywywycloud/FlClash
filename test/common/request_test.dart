@@ -43,9 +43,10 @@ class _HostAdapter implements HttpClientAdapter {
 }
 
 class _PathAdapter implements HttpClientAdapter {
-  _PathAdapter(this.byPath);
+  _PathAdapter(this.byPath, {this.onRequest});
 
   final Map<String, ResponseBody Function()> byPath;
+  final void Function(RequestOptions)? onRequest;
 
   @override
   Future<ResponseBody> fetch(
@@ -53,6 +54,7 @@ class _PathAdapter implements HttpClientAdapter {
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
   ) async {
+    onRequest?.call(options);
     return byPath[options.uri.path]!();
   }
 
@@ -62,6 +64,51 @@ class _PathAdapter implements HttpClientAdapter {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('the HWID survives only same-origin HTTPS redirects', () async {
+    final request = Request();
+    final requests = <RequestOptions>[];
+    request.subscriptionDio.httpClientAdapter = _PathAdapter({
+      '/start': () => ResponseBody.fromString(
+        '',
+        302,
+        headers: {
+          HttpHeaders.locationHeader: ['/same'],
+        },
+      ),
+      '/same': () => ResponseBody.fromString(
+        '',
+        307,
+        headers: {
+          HttpHeaders.locationHeader: [
+            'https://subscriptions.example:8443/end',
+          ],
+        },
+      ),
+      '/end': () => ResponseBody.fromString('proxies: []', 200),
+    }, onRequest: requests.add);
+
+    await request.getFileResponseForUrl(
+      'https://user:password@subscriptions.example/start',
+      hwid: '0123456789abcdef',
+    );
+    expect(requests.map((options) => options.headers['X-HWID']), [
+      '0123456789abcdef',
+      '0123456789abcdef',
+      null,
+    ]);
+    expect(requests.first.headers[HttpHeaders.authorizationHeader], isNotNull);
+    expect(requests.last.headers[HttpHeaders.authorizationHeader], isNull);
+    expect(requests.every((options) => !options.followRedirects), isTrue);
+
+    requests.clear();
+    await request.getFileResponseForUrl(
+      'http://subscriptions.example/end',
+      hwid: '0123456789abcdef',
+    );
+    expect(requests.single.headers['X-HWID'], isNull);
+    expect(requests.single.followRedirects, isTrue);
+  });
 
   test('getTextResponseForUrl propagates the typed DioException', () async {
     // flutter_test's mocked HttpClient answers every request with HTTP 400,

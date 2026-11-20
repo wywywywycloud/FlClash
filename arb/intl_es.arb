@@ -103,6 +103,7 @@
   "qrcodeTooLongTip": "Este enlace es demasiado largo para un código QR. Usa Copiar enlace.",
   "submit": "Enviar",
   "createProfileFromUrlTip": "¿Quieres crear un perfil a partir de {url}?",
+  "subscriptionHwidRequest": "¿Permitir que se envíe a {host} un identificador aleatorio (HWID) exclusivo de esta suscripción?",
   "create": "Crear",
   "pleaseUploadValidQrcode": "Sube un código QR válido",
   "blacklistMode": "Modo lista negra",

@@ -326,6 +326,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String subscriptionHwidRequest(String host) {
+    return 'このサブスクリプション専用のランダムな識別子（HWID）を $host に送信することを許可しますか？';
+  }
+
+  @override
   String get create => '作成';
 
   @override
